@@ -57,8 +57,9 @@ class WebScrapy(BaseClassWithWeakReferenceCount):
         elif (driveType == "Chrome"):
             self.driver = self.getChromeDriver()
 
+
     # return True if element is visible within 2 seconds, otherwise False
-    def is_visible(self, locator, timeout=2):
+    def wait_till_visible(self, locator, timeout=2):
         try:
             ui.WebDriverWait(self.driver, timeout).until(EC.visibility_of_element_located((By.CSS_SELECTOR, locator)))
             return True
@@ -80,7 +81,7 @@ class WebScrapy(BaseClassWithWeakReferenceCount):
           for cssSelector in cssSelecors:
 
               elements = self.driver.find_elements_by_css_selector(cssSelector[0])
-              attribute = self.driver.find_elements_by_css_selector(cssSelector[1])
+              attribute = cssSelector[1]
 
               eSize = len(elements)
 

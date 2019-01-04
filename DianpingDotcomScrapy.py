@@ -1,9 +1,5 @@
 # -*- coding: utf-8 -*-
-
-from weakref import WeakValueDictionary
-
 from WebScraper import BaseClassWithWeakReferenceCount, WebScrapyMongoDataStorage
-
 
 class DianpingDotComCrawler(BaseClassWithWeakReferenceCount):
 
@@ -18,6 +14,8 @@ class DianpingDotComCrawler(BaseClassWithWeakReferenceCount):
 
     #http://www.dianping.com/shanghai
     def parseDianpingAllCategories(self, page):
+
+        self.driver.get(page)
 
         dianpingCategories = list()
 
@@ -107,7 +105,7 @@ class DianpingDotComCrawler(BaseClassWithWeakReferenceCount):
 
 
     def __del__(self):
-            pass
+        pass
 
 
 if __name__ == '__main__':
