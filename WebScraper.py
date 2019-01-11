@@ -8,7 +8,7 @@ from selenium.webdriver.support import ui
 import selenium.webdriver.support.expected_conditions as EC
 from weakref import WeakValueDictionary
 
-class BaseClassWithWeakReferenceCount():
+class BaseClassWithWeakReferenceCount(object):
 
     _instances = WeakValueDictionary()
 
@@ -17,27 +17,36 @@ class BaseClassWithWeakReferenceCount():
 
 class WebScrapyMongoDataStorage(BaseClassWithWeakReferenceCount):
 
+     db = None
+     client = None
+
      def __init__(self):
-         super(self)
+         super(BaseClassWithWeakReferenceCount, self).__init__()
 
      def getDataStorageClient(self, databaseURI, dbname):
          client = pymongo.MongoClient(databaseURI)
          self.db = client[dbname]
-         return self.db
+         return self
 
-     def saveOneToStorage(self, (obj, collectionName)):
+     def saveOneToStorage(self, obj, collectionName):
          self.db[collectionName].insert_one(dict(obj))
 
-     def saveAllToStorage(self, (objs, collectionName)):
-         self.db[collectionName].insert_all(objs)
+     def saveAllToStorage(self, collection, collectionName):
+         print(collectionName)
+         self.db[collectionName].insert_many(collection)
 
      def __del__(self):
+
+         if (self.db == None):
+             return
+
          self.db.client.close()
 
 
 class WebScrapy(BaseClassWithWeakReferenceCount):
 
     driver = None
+
 
     def getChromeDriver(self):
         chrome_driver_path = "/Users/shannon/serenium_drivers/chromedriver"
@@ -49,7 +58,9 @@ class WebScrapy(BaseClassWithWeakReferenceCount):
 
     def __init__(self, driveType):
 
-        super(self)
+        # super(self)
+
+        super(WebScrapy, self).__init__()
 
         if (driveType == "FireFox"):
             self.driver = self.getFireFoxDriver()
@@ -57,6 +68,8 @@ class WebScrapy(BaseClassWithWeakReferenceCount):
         elif (driveType == "Chrome"):
             self.driver = self.getChromeDriver()
 
+    def load_page(self, pageUri):
+         self.driver.get(pageUri)
 
     # return True if element is visible within 2 seconds, otherwise False
     def wait_till_visible(self, locator, timeout=2):
@@ -64,6 +77,13 @@ class WebScrapy(BaseClassWithWeakReferenceCount):
             ui.WebDriverWait(self.driver, timeout).until(EC.visibility_of_element_located((By.CSS_SELECTOR, locator)))
             return True
         except TimeoutException:
+            return False
+
+    def wait_till_element_located(self, locator, timeout=2):
+        try:
+            ui.WebDriverWait(self.driver, timeout).until(EC.presence_of_all_elements_located((By.CSS_SELECTOR, locator)))
+            return True
+        finally:
             return False
 
     # return True if element is not visible within 2 seconds, otherwise False
@@ -80,30 +100,37 @@ class WebScrapy(BaseClassWithWeakReferenceCount):
 
           for cssSelector in cssSelecors:
 
-              elements = self.driver.find_elements_by_css_selector(cssSelector[0])
-              attribute = cssSelector[1]
+              print(cssSelector)
 
-              eSize = len(elements)
+              if (self.wait_till_visible(cssSelector[0], 10) == True):
 
-              print(eSize)
+                  print(cssSelector[0])
 
-              if (eSize > 0):
-                  return elements
+                  elements = self.driver.find_elements_by_css_selector(cssSelector[0])
 
-              for element in elements:
-                  if (attribute == "text" and element.text != None):
-                      retSet.append(element.text)
+                  attribute = cssSelector[1]
 
-                  elif (attribute == "text" and element.text == None):
-                      retSet.append(element)
+                  eSize = len(elements)
 
-                  elif (attribute == "text" and element.text == "Html"):
-                      retSet.append(element.get_arrtibute("innerHtml"))
+                  if (eSize > 0):
+                     # return elements
 
-                  elif (attribute == "Boolean"):
-                      retSet.append(True)
-                  else:
-                      retSet.append(element.get_arrtibute(attribute))
+                      for element in elements:
+
+                          print(element.get_attribute("innerHTML"))
+                          print(attribute)
+
+                          if (attribute == "text"):
+                              retSet.append(element.text)
+
+                          elif (attribute == "element"):
+                              retSet.append(element)
+
+                          elif (attribute == "boolean"):
+                              retSet.append(True)
+
+                          else:
+                              retSet.append(element.get_attribute(attribute))
 
 
           return retSet

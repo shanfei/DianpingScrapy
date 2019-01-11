@@ -3,6 +3,7 @@
   <component name="ProjectModuleManager">
     <modules>
       <module fileurl="file://$PROJECT_DIR$/.idea/DianpingScrapy.iml" filepath="$PROJECT_DIR$/.idea/DianpingScrapy.iml" />
+      <module fileurl="file://$PROJECT_DIR$/../PycharmProjects/seleniumScrapy/.idea/seleniumScrapy.iml" filepath="$PROJECT_DIR$/../PycharmProjects/seleniumScrapy/.idea/seleniumScrapy.iml" />
     </modules>
   </component>
 </project>
